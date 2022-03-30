@@ -44,7 +44,9 @@ const App = () => {
       alert("Message is required");
       return;
     }
-    sendMessage(username, messageText);
+    const tabUserFound = allChatUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
+    const userMessage = tabUserFound ? tabUserFound.username : username;
+    sendMessage(userMessage, messageText);
     setMessageText("");
   }
 
@@ -56,6 +58,7 @@ const App = () => {
   }
 
   const sendMessage = (username, text) => {
+    console.log('username, text ===>', username, text)
     const todaysDate = formatDateTime();
     const lastMessages = JSON.parse(savedMessages);
     const updatedMessages = [...lastMessages, { id: uuidv4(), username: username, message: text, sentAt: todaysDate }];
@@ -73,7 +76,7 @@ const App = () => {
           <div className="card">
             <div className="row g-0">
               <div className="col-12 col-lg-7 col-xl-12">
-                <Messages messages={JSON.parse(savedMessages)} isLoading={isLoading}/>
+                <Messages messages={JSON.parse(savedMessages)} isLoading={isLoading} tabUsername={tabUserFound.username}/>
                 <MessageForm 
                   onMessageSendHandler={onMessageSendHandler} 
                   messageText={messageText} 
