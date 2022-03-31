@@ -1,33 +1,20 @@
 import {
-    GET_USERNAME,
-    SET_USERNAME,
-    SET_USER_ERROR,
+    ADD_USER,
+    GET_USERS
 } from '../actionTypes';
 
 
-export const setUsername = username => {
+export const addUser = user => {
     return  {
-        type: SET_USERNAME,
-        username
+        type: ADD_USER,
+        user
     };
 };
 
 
-export function getUsername(username) {
+export const getUser = (users) => {
     return {
-      type: GET_USERNAME,
-      username,
+      type: GET_USERS,
+      users,
     };
 }
-
-export function setUserError(userError) {
-    return {
-      type: SET_USER_ERROR,
-      payload: userError,
-    };
-}
-
-
-
-
-

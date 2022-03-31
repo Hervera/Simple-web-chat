@@ -1,3 +1,4 @@
 export const SET_MESSAGES = 'SET_MESSAGES';
-export const GET_MESSAGE = 'GET_MESSAGE';
+export const GET_MESSAGES = 'GET_MESSAGES';
 export const SET_MESSAGE_ERROR = 'SET_MESSAGE_ERROR';
+export const ADD_MESSAGE = 'ADD_MESSAGE';

@@ -1,31 +1,22 @@
 import {
-    SET_MESSAGES, GET_MESSAGE, SET_MESSAGE_ERROR
+    ADD_MESSAGE, GET_MESSAGES
 } from '../actionTypes';
 
 const initialState = {
-    messages: [],
-    messageData: null,
-    messageError: null,
-};
+    messages: []
+}
 
 const messageReducer = (state = initialState, action) => {
     switch (action.type) {
-        case SET_MESSAGES:
+        case ADD_MESSAGE:
             return {
                 ...state,
-                messages: action.messages
+                messages: [ ...state.messages, action.message ]
             };
-
-        case GET_MESSAGE:
+        case GET_MESSAGES:
             return {
                 ...state,
-                messageData: action.payload
-            };
-
-        case SET_MESSAGE_ERROR:
-            return {
-                ...state,
-                messageError: action.payload
+                messages: [ ...state.messages, action.messages ]
             };
         default:
             return state;
