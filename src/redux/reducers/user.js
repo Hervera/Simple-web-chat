@@ -1,23 +1,23 @@
 import {
-    SET_USERNAME, GET_USERNAME
+    ADD_USER, GET_USERS
 } from '../actionTypes';
 
 const initialState = {
-    username: null,
+    users: [],
 };
 
 const userReducer = (state = initialState, action) => {
     switch (action.type) {
-        case SET_USERNAME:
+        case ADD_USER:
             return {
                 ...state,
-                username: action.user
+                users: [ ...state.users, action.user]
             };
 
-        case GET_USERNAME:
+        case GET_USERS:
             return {
                 ...state,
-                username: action.payload
+                users: [...state.users, action.users]
             };
         default:
             return state;

@@ -1,21 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import useLocalStorage from 'react-use-localstorage';
 import { v4 as uuidv4 } from 'uuid';
+import { useDispatch
+  , useSelector 
+} from "react-redux";
+import useLocalStorage from 'react-use-localstorage';
+
 import Header from "./components/Header";
 import MessageForm from "./components/MessageForm";
 import Messages from "./components/Messages";
 import Username from "./components/UsernameForm";
+import { addUser, addMessage } from './redux/actionCreators';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 const App = () => {
-  
   const [username, setUsername] = useState("");
-  const [chatUsers, setChatUsers] = useLocalStorage('chatUsers',  JSON.stringify([]));
-
   const [messageText, setMessageText] = useState("");
-  const [savedMessages, setSavedMessages] = useLocalStorage('savedMessages', JSON.stringify([]));
   const [isLoading, setIsLoading] = useState(true);
+
+  const dispatch = useDispatch();
+  const users = useSelector(state => state.user.users);
+  const messages = useSelector(state => state.message.messages);
+
+  const [chatUsers, setChatUsers] = useLocalStorage('chatUsers',  JSON.stringify(users));
+  const [savedMessages, setSavedMessages] = useLocalStorage('savedMessages', JSON.stringify(messages));  
 
   useEffect(() => {
       setIsLoading(false);
@@ -35,6 +43,8 @@ const App = () => {
     const lastUsers = JSON.parse(chatUsers);
     const updatedChatUsers = [...lastUsers, userWithActiveTab];
     setChatUsers(JSON.stringify(updatedChatUsers));
+
+    dispatch(addUser(userWithActiveTab));
   }
 
   const onMessageSendHandler = (e) => {
@@ -58,13 +68,16 @@ const App = () => {
   }
 
   const sendMessage = (username, text) => {
-    console.log('username, text ===>', username, text)
     const todaysDate = formatDateTime();
+    const newMessage = { id: uuidv4(), username: username, message: text, sentAt: todaysDate };
+
     const lastMessages = JSON.parse(savedMessages);
-    const updatedMessages = [...lastMessages, { id: uuidv4(), username: username, message: text, sentAt: todaysDate }];
+    const updatedMessages = [...lastMessages, newMessage];
     setSavedMessages(JSON.stringify(updatedMessages));
+
+    dispatch(addMessage(newMessage));
   }
-  
+
   const allChatUsers = JSON.parse(chatUsers);
   const tabUserFound = allChatUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
   
@@ -76,7 +89,11 @@ const App = () => {
           <div className="card">
             <div className="row g-0">
               <div className="col-12 col-lg-7 col-xl-12">
-                <Messages messages={JSON.parse(savedMessages)} isLoading={isLoading} tabUsername={tabUserFound.username}/>
+                <Messages 
+                  messages={JSON.parse(savedMessages)}
+                  isLoading={isLoading} 
+                  tabUsername={tabUserFound.username}
+                />
                 <MessageForm 
                   onMessageSendHandler={onMessageSendHandler} 
                   messageText={messageText} 
