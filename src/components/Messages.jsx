@@ -1,6 +1,6 @@
 import React from 'react';
-import Message from "./Message";
 
+import Message from "./Message";
 import { useScrollToBottom } from "../hooks";
 
 const Messages = ({ messages, isLoading, tabUsername }) => {

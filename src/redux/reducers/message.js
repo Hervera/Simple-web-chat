@@ -16,7 +16,7 @@ const messageReducer = (state = initialState, action) => {
         case GET_MESSAGES:
             return {
                 ...state,
-                messages: [ ...state.messages, action.messages ]
+                messages: action.messages
             };
         default:
             return state;
