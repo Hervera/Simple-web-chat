@@ -12,7 +12,7 @@ export const addUser = user => {
 };
 
 
-export const getUser = (users) => {
+export const getUsers = (users) => {
     return {
       type: GET_USERS,
       users,

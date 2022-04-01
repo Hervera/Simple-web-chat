@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useDispatch
-  , useSelector 
-} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import useLocalStorage from 'react-use-localstorage';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Header from "./components/Header";
 import MessageForm from "./components/MessageForm";
 import Messages from "./components/Messages";
 import Username from "./components/UsernameForm";
 import { addUser, addMessage } from './redux/actionCreators';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 const App = () => {
@@ -25,9 +23,12 @@ const App = () => {
   const [chatUsers, setChatUsers] = useLocalStorage('chatUsers',  JSON.stringify(users));
   const [savedMessages, setSavedMessages] = useLocalStorage('savedMessages', JSON.stringify(messages));  
 
+  const lastUsers = JSON.parse(chatUsers);
+  const lastMessages = JSON.parse(savedMessages);
+
   useEffect(() => {
       setIsLoading(false);
-  }, []);
+  }, [lastUsers, dispatch, lastMessages]);
 
   const saveNewUser = (e) => {
     e.preventDefault();
@@ -39,8 +40,6 @@ const App = () => {
         sessionStorage.tabID : 
         sessionStorage.tabID = uuidv4();
     const userWithActiveTab = { username: username, tabId: tabId };
-
-    const lastUsers = JSON.parse(chatUsers);
     const updatedChatUsers = [...lastUsers, userWithActiveTab];
     setChatUsers(JSON.stringify(updatedChatUsers));
 
@@ -54,7 +53,7 @@ const App = () => {
       alert("Message is required");
       return;
     }
-    const tabUserFound = allChatUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
+    const tabUserFound = lastUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
     const userMessage = tabUserFound ? tabUserFound.username : username;
     sendMessage(userMessage, messageText);
     setMessageText("");
@@ -70,16 +69,12 @@ const App = () => {
   const sendMessage = (username, text) => {
     const todaysDate = formatDateTime();
     const newMessage = { id: uuidv4(), username: username, message: text, sentAt: todaysDate };
-
-    const lastMessages = JSON.parse(savedMessages);
     const updatedMessages = [...lastMessages, newMessage];
     setSavedMessages(JSON.stringify(updatedMessages));
-
     dispatch(addMessage(newMessage));
   }
 
-  const allChatUsers = JSON.parse(chatUsers);
-  const tabUserFound = allChatUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
+  const tabUserFound = lastUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
   
   return (
     <main className="content">
