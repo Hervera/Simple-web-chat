@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from "react-redux";
 import useLocalStorage from 'react-use-localstorage';
@@ -14,21 +14,33 @@ import './App.css';
 const App = () => {
   const [username, setUsername] = useState("");
   const [messageText, setMessageText] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
 
   const dispatch = useDispatch();
   const users = useSelector(state => state.user.users);
   const messages = useSelector(state => state.message.messages);
 
   const [chatUsers, setChatUsers] = useLocalStorage('chatUsers',  JSON.stringify(users));
-  const [savedMessages, setSavedMessages] = useLocalStorage('savedMessages', JSON.stringify(messages));  
-
   const lastUsers = JSON.parse(chatUsers);
-  const lastMessages = JSON.parse(savedMessages);
+  const tabUserFound = lastUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
 
+  const perPage = 25;
+  const [lastObjectPosition, setLastObjectPosition] = useState(5);
+  const [savedMessages, setSavedMessages] = useLocalStorage('savedMessages', JSON.stringify(messages));  
+  const lastMessages = JSON.parse(savedMessages);
+  const [chunkMessages, setChunkMessages] = useState(lastMessages.slice(-perPage));
+
+  const listInnerRef = useRef();
+  const messagesEndRef = useRef();
+  const scrollToBottom = () => {
+    if(!messagesEndRef.current) return;
+    messagesEndRef.current.scrollIntoView();
+  };
+
+  const messagesLength = lastMessages.length;
   useEffect(() => {
-      setIsLoading(false);
-  }, [lastUsers, dispatch, lastMessages]);
+    scrollToBottom();
+  }, []);
 
   const saveNewUser = (e) => {
     e.preventDefault();
@@ -42,8 +54,8 @@ const App = () => {
     const userWithActiveTab = { username: username, tabId: tabId };
     const updatedChatUsers = [...lastUsers, userWithActiveTab];
     setChatUsers(JSON.stringify(updatedChatUsers));
-
     dispatch(addUser(userWithActiveTab));
+    scrollToBottom();
   }
 
   const onMessageSendHandler = (e) => {
@@ -71,10 +83,45 @@ const App = () => {
     const newMessage = { id: uuidv4(), username: username, message: text, sentAt: todaysDate };
     const updatedMessages = [...lastMessages, newMessage];
     setSavedMessages(JSON.stringify(updatedMessages));
+    setChunkMessages(updatedMessages.slice(-perPage));
+    setLastObjectPosition(perPage);
     dispatch(addMessage(newMessage));
+    scrollToBottom();
   }
 
-  const tabUserFound = lastUsers.find(chatUser => chatUser.tabId === sessionStorage.tabID);
+  const onScroll = () => {
+    /* Todo
+        1. Scroll to the top and show loading text
+        2. Show the last n element from the array messages
+        3. When the scroll reaches to the top show the next n messages  
+        4. Adjust the scroll position to avoid loading repetition
+    */
+    if (listInnerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight} = listInnerRef.current;
+        // on scroll to top
+        if (scrollTop === 0) {
+          if(chunkMessages.length >= lastMessages.length){
+              setIsFetching(false);
+              return
+          }
+          setIsFetching(true);
+          setTimeout(() => {
+              const lastPos = lastObjectPosition + perPage;
+              setChunkMessages(lastMessages.slice(-lastPos))
+              setLastObjectPosition(lastObjectPosition => lastObjectPosition + perPage);
+              listInnerRef.current?.scrollTo(0, 200);
+              setIsFetching(false);
+          }, 2000);
+        }
+
+        // on scroll to bottom
+        if (scrollTop + clientHeight === scrollHeight) {
+          setChunkMessages(lastMessages.slice(-perPage));
+          setLastObjectPosition(perPage);
+        }
+    }
+  };
+
   
   return (
     <main className="content">
@@ -83,11 +130,14 @@ const App = () => {
         {tabUserFound && tabUserFound.username ? 
           <div className="card">
             <div className="row g-0">
-              <div className="col-12 col-lg-7 col-xl-12">
+              <div className="col-12 col-lg-12 col-xl-12">
                 <Messages 
-                  messages={JSON.parse(savedMessages)}
-                  isLoading={isLoading} 
+                  messages={messagesLength > perPage ? chunkMessages : lastMessages}
                   tabUsername={tabUserFound.username}
+                  isFetching={isFetching} 
+                  listInnerRef={listInnerRef}
+                  messagesEndRef={messagesEndRef}
+                  onScroll={onScroll}
                 />
                 <MessageForm 
                   onMessageSendHandler={onMessageSendHandler} 
