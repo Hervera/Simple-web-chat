@@ -10,8 +10,15 @@ describe('<Messages />', () => {
             {id: '029f2c76-8d9d-4839-b265-b4fd92ab2efc', username: 'Hervera', message: 'Hi here', sentAt: '31 Mar 2022 10:24 PM'},
             {id: '3a3a3a47-8349-40e6-9205-d297e0ac76c5', username: 'Keza', message: 'Hi Hervera', sentAt: '31 Mar 2022 10:24 PM'}
         ], 
-        isLoading: false, 
+        isFetching: false, 
         tabUsername: 'Hervera', 
+        listInnerRef: {
+            current: <div/>
+        },
+        messagesEndRef: {
+            current: <div/>
+        }, 
+        onScroll: jest.fn(),
     };  
 
     window.HTMLElement.prototype.scrollIntoView = jest.fn();

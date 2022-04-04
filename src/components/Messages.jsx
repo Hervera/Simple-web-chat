@@ -1,15 +1,17 @@
 import React from 'react';
 
 import Message from "./Message";
-import { useScrollToBottom } from "../hooks";
 
-const Messages = ({ messages, isLoading, tabUsername }) => {
-    const messagesEndRef = useScrollToBottom(messages);
-  
+
+const Messages = ({ messages, tabUsername, isFetching, listInnerRef, messagesEndRef, onScroll }) => {
+    const messagesLength = messages.length;
     return (
         <div className="position-relative">
-            <div className="chat-messages p-4">
-                {isLoading && (<h5 className="loading text-center my-3">Loading ...</h5>)}
+            <div className="chat-messages p-4"
+                onScroll={onScroll}
+                ref={listInnerRef}
+            >
+                {isFetching && (<h5 className="loading text-center my-3">Loading ...</h5>)}
                 {messages.map(message => 
                     <Message 
                         key={message.id} 
@@ -19,7 +21,7 @@ const Messages = ({ messages, isLoading, tabUsername }) => {
                         tabUsername={tabUsername}
                     />
                 )}
-                <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} style={{ marginTop: messagesLength > 5 ? '60px' : '0px' }}/>
             </div>
         </div>
     )
